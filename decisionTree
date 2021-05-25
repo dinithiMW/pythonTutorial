@@ -1,5 +1,8 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.tree import DecisionTreeClassifier
+import matplotlib.pyplot as plt
 
 dataset = pd.read_csv("Social_Network_Ads.csv")
 
@@ -13,3 +16,27 @@ print(y.shape)
 
 
 x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.25)
+
+
+data = MinMaxScaler()
+
+normalized_data = data.fit(x_train)
+
+x_train_scaled = normalized_data.transform(x_train)
+x_test_scaled = normalized_data.transform(x_test)
+
+print(x_train_scaled)
+
+model_DT = DecisionTreeClassifier()
+model_DT = model_DT.fit(x_train_scaled,y_train)
+
+y_pred = model_DT.predict(x_test_scaled)
+
+accuracy = model_DT.score(x_test_scaled,y_test)
+
+print(accuracy)
+
+plt.scatter(x_test[y_test==0]["Age"],x_test[y_test==0]["EstimatedSalary"],c="Red",alpha=0.7)
+plt.scatter(x_test[y_test==1]["Age"],x_test[y_test==1]["EstimatedSalary"],c="Blue",alpha=0.7)
+
+plt.show()

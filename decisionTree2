@@ -1,0 +1,25 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+
+dataset = pd.read_csv("diabetes.csv")
+
+print(dataset.head())
+
+x = dataset[["Pregnancies","Glucose","BloodPressure","SkinThickness","Insulin","BMI","DiabetesPedigreeFunction","Age"]]
+y = dataset.Outcome
+
+print(x.shape)
+print(y.shape)
+
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.20)
+
+model_DT = DecisionTreeClassifier()
+model_DT.fit(x_train,y_train)
+
+y_predict = model_DT.predict(x_test)
+
+print(y_predict)
+
+print("accuracy",metrics.accuracy_score(y_test,y_predict))

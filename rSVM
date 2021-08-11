@@ -1,0 +1,36 @@
+import pandas as pd
+from sklearn import metrics
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+np.random.seed(82)
+# loading data file
+dataset = pd.read_csv("dataset12.csv")
+
+print(dataset.head())
+print(dataset.shape)
+
+x = dataset.iloc[:, 7:27]
+y = dataset.iloc[:, 5]
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20)
+
+imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+imp = imp.fit(x_train)
+
+# train
+x_train_imp = imp.transform(x_train)
+model = SVC(kernel='linear')
+model.fit(x_train_imp, y_train)
+
+x_test_imp = imp.transform(x_test)
+y_predict = model.predict(x_test_imp)
+print(y_predict)
+
+accuracy = model.score(x_test_imp, y_test)
+
+print(accuracy)
+print("accuracy", metrics.accuracy_score(y_test, y_predict)*100)
+print(metrics.classification_report(y_test, y_predict))

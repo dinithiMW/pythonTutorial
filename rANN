@@ -17,11 +17,7 @@ print(dataset.shape)
 x = dataset.iloc[:,  7:27]
 y = dataset.iloc[:, 5]
 
-sc = StandardScaler()
-x = sc.fit_transform(x)
-print(x)
-
-x_train, x_test, y_train, y_test = train_test_split(x,y,train_size=0.8)
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8)
 
 print(x_train.shape, x_test.shape)
 
@@ -32,12 +28,12 @@ imp = imp.fit(x_train)
 x_train_imp = imp.transform(x_train)
 x_test_imp = imp.transform(x_test)
 
-# min maxScaler
-data = MinMaxScaler()
-normalized_data = data.fit(x_train_imp)
+# scale the features
+scaler = MinMaxScaler()
+scaler.fit(x_train_imp)
+x_train_scaled = scaler.transform(x_train_imp)
 
-x_train_scaled = normalized_data.transform(x_train_imp)
-x_test_scaled = normalized_data.transform(x_test_imp)
+x_test_scaled = scaler.transform(x_test_imp)
 
 print(x_train_scaled)
 

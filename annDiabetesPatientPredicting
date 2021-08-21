@@ -1,0 +1,51 @@
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.preprocessing import MinMaxScaler
+
+np.random.seed(1)
+
+# read CSV file
+dataset = pd.read_csv("diabetes.csv")
+
+print(dataset.shape)
+
+feature_cols = ['Pregnancies', 'Insulin', 'BMI', 'Age', 'Glucose', 'BloodPressure', 'DiabetesPedigreeFunction']
+x = dataset[feature_cols]
+y = dataset.Outcome
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8)
+
+print(x_train.shape, x_test.shape)
+
+# replace missing values
+imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+imp = imp.fit(x_train)
+
+x_train_imp = imp.transform(x_train)
+x_test_imp = imp.transform(x_test)
+
+# scale the features
+scaler = MinMaxScaler()
+scaler.fit(x_train_imp)
+
+x_train_scaled = scaler.transform(x_train_imp)
+x_test_scaled = scaler.transform(x_test_imp)
+
+print(x_train_scaled)
+
+model_ANN = MLPClassifier(hidden_layer_sizes=(10, 10, 10), activation='relu', solver='adam', max_iter=250)
+model_ANN.fit(x_train_scaled, y_train)
+
+y_predict = model_ANN.predict(x_test_scaled)
+print(y_predict)
+
+# performance of the model on the test
+print(confusion_matrix(y_test, y_predict))
+print(classification_report(y_test, y_predict))
+
+print("Accuracy is", accuracy_score(y_test, y_predict)*100)

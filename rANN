@@ -72,4 +72,14 @@ print("Mean squared error", mean_squared_error(le_y_test, y_predict))
 print(confusion_matrix(le_y_test, y_predict))
 print(classification_report(le_y_test, y_predict))
 
+classes = np.unique(le_y_test)
+fig, ax = plt.subplots()
+cm = metrics.confusion_matrix(le_y_test, y_predict, labels=classes)
+sns.heatmap(cm, annot=True, fmt='d', cmap=plt.cm.Reds, cbar=False)
+ax.set(xlabel="Predict", ylabel="True", title="Confusion matrix")
+ax.set_yticklabels(labels=classes, rotation=0)
+plt.show()
+
+
+
 

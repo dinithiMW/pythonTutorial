@@ -1,56 +1,89 @@
+import numpy
 import pandas as pd
+from sklearn.metrics import accuracy_score, mean_squared_error, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
 import numpy as np
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+from matplotlib import pyplot as plt
+from sklearn import tree
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+from sklearn.metrics import mean_absolute_error
 
-np.random.seed(80)
+
+np.random.seed(1)
 
 dataset = pd.read_csv("dataset12.csv")
 
 print(dataset.head())
 
+feature_cols = ['pH', 'DO (mg/l)', 'TDS (ppm)', 'NaCl (ppm)', 'EC (µS)', 'Res (Ω)', 'Nitrate (ppm)', 'Nitrite (ppm)',
+                'Phosphate (ppm)', 'Sulphate (ppm)', 'Fluoride (ppm)', 'Chloride (ppm)', 'Alkalinity (ppm)',
+                'Hardness (ppm)', 'Na (ppm)', 'K (ppm)', 'Mg (ppm)', 'Ca (ppm)', 'Fe (ppm)', 'Pb (ppm)']
 x = dataset.values[:, 7:27]
 y = dataset.values[:, 5]
 
 print(x.shape)
 print(y.shape)
 
-# split dataset
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=100)
-
 # replace missing values
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-imp = imp.fit(x_train)
+imp = imp.fit(x)
 
-x_train_imp = imp.transform(x_train)
-x_test_imp = imp.transform(x_test)
+x_imp = imp.transform(x)
 
-# min maxScaler
-data = MinMaxScaler()
+# split dataset
+x_train, x_test, y_train, y_test = train_test_split(x_imp, y, test_size=0.20, random_state=10)
 
-normalized_data = data.fit(x_train_imp)
+le = LabelEncoder()
+le = le.fit(y_train)
 
-x_train_scaled = normalized_data.transform(x_train_imp)
-x_test_scaled = normalized_data.transform(x_test_imp)
+le_y_train = pd.Series(le.transform(y_train))
+print(le_y_train)
 
-print(x_train_scaled)
+le_y_test = le.transform(y_test)
+print(le_y_test)
 
 # train
 
 model_DT = DecisionTreeClassifier()
-model_DT.fit(x_train_scaled, y_train)
+model_DT.fit(x_train, le_y_train)
 
 # Funcion to prediction
-y_predict = model_DT.predict(x_test_scaled)
+y_predict = model_DT.predict(x_test)
 
 print(y_predict)
 
-accuracy = model_DT.score(x_test_scaled, y_test)
+# performance of the model on the test
+corr_matrix = numpy.corrcoef(le_y_test, y_predict)
+corr = corr_matrix[0, 1]
+R_sq = corr ** 2
+print("R_squared is", R_sq)
 
-print(accuracy)
+recall = metrics.recall_score(le_y_test, y_predict)
+precision = metrics.precision_score(le_y_test, y_predict)
+print("Recall (all 1s predicted right):", round(recall, 2))
+print("Precision (confidence when predicting a 1):", round(precision, 2))
 
-print("accuracy", metrics.accuracy_score(y_test, y_predict)*100)
-print(metrics.classification_report(y_test, y_predict))
+print("Accuracy is", accuracy_score(le_y_test, y_predict))
+
+# taking root of mean squared error
+root_mean_squared_error = sqrt(mean_squared_error(le_y_test, y_predict))
+print("RMSE is", root_mean_squared_error)
+
+MAE = mean_absolute_error(le_y_test, y_predict)
+print("MAPE is", MAE)
+
+print(confusion_matrix(le_y_test, y_predict))
+print(classification_report(le_y_test, y_predict))
+
+# save classifier as an image
+# from sklearn import tree
+fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(10, 8), dpi=1000)
+tree.plot_tree(model_DT,
+               feature_names=feature_cols, class_names=['D', 'T'],
+               filled=True);
+fig.savefig('water_source.png')

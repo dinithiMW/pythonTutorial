@@ -11,10 +11,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
 from sklearn import metrics
+from matplotlib import pyplot
 
 np.random.seed(1)
 # read CSV file
-dataset = pd.read_csv("dataset12.csv")
+dataset = pd.read_csv("water.csv")
 
 print(dataset.shape)
 z = dataset['water sample'].value_counts()
@@ -22,6 +23,29 @@ print(z)
 
 x = dataset.iloc[:, 7:27]
 y = dataset.iloc[:, 5]
+
+#2 datset describe
+print(dataset.describe())
+
+types = dataset.dtypes
+print(types)
+
+#2 histogram
+x.hist(figsize=(16,16))
+plt.figure().show()
+
+from pandas.plotting import scatter_matrix
+
+# 2box and whisker plots in waterSourceBoxplo.py
+# Boxplot with Seaborn
+import seaborn as sns
+sns.set_style('whitegrid')
+ax= sns.boxplot(x='water sample',y='pH',data=dataset)
+ax = sns.stripplot(x="water sample", y="pH",data=dataset)
+
+sns.set_style('whitegrid')
+ax= sns.boxplot(x='water sample',y='DO (mg/l)',data=dataset)
+ax = sns.stripplot(x="water sample", y="DO (mg/l)",data=dataset)
 
 # replace missing values
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')

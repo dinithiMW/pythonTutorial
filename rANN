@@ -5,17 +5,16 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, mean_absolute_error
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, mean_absolute_error, f1_score, roc_auc_score, roc_curve, log_loss,PrecisionRecallDisplay
 from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
 from sklearn import metrics
-from matplotlib import pyplot
 
 np.random.seed(1)
 # read CSV file
-dataset = pd.read_csv("water.csv")
+dataset = pd.read_csv("water.csv", encoding= 'unicode_escape')
 
 print(dataset.shape)
 z = dataset['water sample'].value_counts()
@@ -24,28 +23,13 @@ print(z)
 x = dataset.iloc[:, 7:27]
 y = dataset.iloc[:, 5]
 
-#2 datset describe
-print(dataset.describe())
-
-types = dataset.dtypes
-print(types)
-
 #2 histogram
-x.hist(figsize=(16,16))
+x.hist(figsize=(60,150))
 plt.figure().show()
 
-from pandas.plotting import scatter_matrix
-
-# 2box and whisker plots in waterSourceBoxplo.py
-# Boxplot with Seaborn
-import seaborn as sns
-sns.set_style('whitegrid')
-ax= sns.boxplot(x='water sample',y='pH',data=dataset)
-ax = sns.stripplot(x="water sample", y="pH",data=dataset)
-
-sns.set_style('whitegrid')
-ax= sns.boxplot(x='water sample',y='DO (mg/l)',data=dataset)
-ax = sns.stripplot(x="water sample", y="DO (mg/l)",data=dataset)
+# histogram of y values
+y.hist()
+plt.show()
 
 # replace missing values
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')
@@ -65,7 +49,7 @@ print(le_y_train)
 print(y_train)
 
 le_y_test = le.transform(y_test)
-print(le_y_test)
+print(y_test, le_y_test)
 
 model_ANN = MLPClassifier(hidden_layer_sizes=(10, 10, 10), activation='relu', solver='adam', max_iter=250)
 model_ANN.fit(x_train, le_y_train)
@@ -92,6 +76,9 @@ print("RMSE is", root_mean_squared_error)
 MAE = mean_absolute_error(le_y_test, y_predict)
 print("MAPE is", MAE)
 
+f1 = f1_score(le_y_test, y_predict)
+print('F1 score: %f' % f1)
+
 print("Mean squared error", mean_squared_error(le_y_test, y_predict))
 print(confusion_matrix(le_y_test, y_predict))
 print(classification_report(le_y_test, y_predict))
@@ -104,6 +91,30 @@ ax.set(xlabel="Predict", ylabel="True", title="Confusion matrix")
 ax.set_yticklabels(labels=classes, rotation=0)
 plt.show()
 
+#3accuracy over approaches
+plt.plot(le_y_test, color='green', alpha=0.8, label='Train')
+plt.plot(y_predict, color='magenta', alpha=0.8, label='Test')
+plt.title("Accuracy over epochs", fontsize=14)
+plt.xlabel('Epoches')
+plt.legend(loc='upper left')
+plt.show()
 
+#4auc
+auc = roc_auc_score(le_y_test, y_predict)
+print('AUC - Test Set: %.2f%%' % (auc*100))
 
+# calculate roc curve
+fpr, tpr, thresholds = roc_curve(le_y_test, y_predict)
+# plot no skill
+plt.plot([0, 1], [0, 1], linestyle='--')
+# plot the roc curve for the model
+plt.plot(fpr, tpr, marker='.')
+plt.xlabel('False positive rate')
+plt.ylabel('Sensitivity/ Recall')
+# show the plot
+plt.show()
+
+#4log loss
+accuracy = log_loss(le_y_test, y_predict)
+print("Logloss: %.2f" % (accuracy))
 
